@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Formulario de Información</title>
+
+<style>
+body{
+    font-family: Arial;
+    margin:40px;
+}
+
+table{
+    border-collapse: collapse;
+    width: 400px;
+}
+
+td, th{
+    border:1px solid black;
+    padding:8px;
+}
+
+button{
+    margin-top:15px;
+    padding:8px 15px;
+}
+</style>
+
+</head>
+<body>
+
+<div id="formulario">
+
+<h2>Formulario de Información</h2>
+
+<form id="miFormulario">
+
+<label>Nombre:</label><br>
+<input type="text" id="nombre" required><br><br>
+
+<label>Edad:</label><br>
+<input type="number" id="edad" required><br><br>
+
+<label>Ciudad:</label><br>
+<input type="text" id="ciudad" required><br><br>
+
+<label>Email:</label><br>
+<input type="email" id="email" required><br><br>
+
+<label>Teléfono:</label><br>
+<input type="text" id="telefono" required><br><br>
+
+<button type="submit">Enviar</button>
+
+</form>
+
+</div>
+
+<div id="resultado"></div>
+
+<script>
+
+document.getElementById("miFormulario").addEventListener("submit", function(e){
+
+    e.preventDefault()
+
+    let nombre = document.getElementById("nombre").value
+    let edad = document.getElementById("edad").value
+    let ciudad = document.getElementById("ciudad").value
+    let email = document.getElementById("email").value
+    let telefono = document.getElementById("telefono").value
+
+    document.body.innerHTML = `
+    <h2>Datos del Usuario</h2>
+
+    <table>
+        <tr>
+            <th>Campo</th>
+            <th>Dato</th>
+        </tr>
+        <tr>
+            <td>Nombre</td>
+            <td>${nombre}</td>
+        </tr>
+        <tr>
+            <td>Edad</td>
+            <td>${edad}</td>
+        </tr>
+        <tr>
+            <td>Ciudad</td>
+            <td>${ciudad}</td>
+        </tr>
+        <tr>
+            <td>Email</td>
+            <td>${email}</td>
+        </tr>
+        <tr>
+            <td>Teléfono</td>
+            <td>${telefono}</td>
+        </tr>
+    </table>
+
+    <button onclick="location.reload()">Volver a llenar el formulario</button>
+    `
+})
+
+</script>
+
+</body>
+</html>
