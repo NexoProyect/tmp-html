@@ -1,109 +1,75 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Formulario de Información</title>
-
 <style>
-body{
-    font-family: Arial;
-    margin:40px;
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
 }
 
-table{
-    border-collapse: collapse;
-    width: 400px;
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
 }
 
-td, th{
-    border:1px solid black;
-    padding:8px;
-}
-
-button{
-    margin-top:15px;
-    padding:8px 15px;
+tr:nth-child(even) {
+  background-color: var(--color-alterno, #dddddd);
 }
 </style>
-
 </head>
 <body>
 
-<div id="formulario">
+<h2>HTML Table</h2>
 
-<h2>Formulario de Información</h2>
+<label>Selecciona color para filas alternas: </label>
+<input type="color" id="colorPicker" value="#dddddd">
 
-<form id="miFormulario">
-
-<label>Nombre:</label><br>
-<input type="text" id="nombre" required><br><br>
-
-<label>Edad:</label><br>
-<input type="number" id="edad" required><br><br>
-
-<label>Ciudad:</label><br>
-<input type="text" id="ciudad" required><br><br>
-
-<label>Email:</label><br>
-<input type="email" id="email" required><br><br>
-
-<label>Teléfono:</label><br>
-<input type="text" id="telefono" required><br><br>
-
-<button type="submit">Enviar</button>
-
-</form>
-
-</div>
-
-<div id="resultado"></div>
+<table>
+  <tr>
+    <th>Company</th>
+    <th>Contact</th>
+    <th>Country</th>
+  </tr>
+  <tr>
+    <td>Alfreds Futterkiste</td>
+    <td>Maria Anders</td>
+    <td>Germany</td>
+  </tr>
+  <tr>
+    <td>Centro comercial Moctezuma</td>
+    <td>Francisco Chang</td>
+    <td>Mexico</td>
+  </tr>
+  <tr>
+    <td>Ernst Handel</td>
+    <td>Roland Mendel</td>
+    <td>Austria</td>
+  </tr>
+  <tr>
+    <td>Island Trading</td>
+    <td>Helen Bennett</td>
+    <td>UK</td>
+  </tr>
+  <tr>
+    <td>Laughing Bacchus Winecellars</td>
+    <td>Yoshi Tannamuri</td>
+    <td>Canada</td>
+  </tr>
+  <tr>
+    <td>Magazzini Alimentari Riuniti</td>
+    <td>Giovanni Rovelli</td>
+    <td>Italy</td>
+  </tr>
+</table>
 
 <script>
+const picker = document.getElementById("colorPicker");
 
-document.getElementById("miFormulario").addEventListener("submit", function(e){
-
-    e.preventDefault()
-
-    let nombre = document.getElementById("nombre").value
-    let edad = document.getElementById("edad").value
-    let ciudad = document.getElementById("ciudad").value
-    let email = document.getElementById("email").value
-    let telefono = document.getElementById("telefono").value
-
-    document.body.innerHTML = `
-    <h2>Datos del Usuario</h2>
-
-    <table>
-        <tr>
-            <th>Campo</th>
-            <th>Dato</th>
-        </tr>
-        <tr>
-            <td>Nombre</td>
-            <td>${nombre}</td>
-        </tr>
-        <tr>
-            <td>Edad</td>
-            <td>${edad}</td>
-        </tr>
-        <tr>
-            <td>Ciudad</td>
-            <td>${ciudad}</td>
-        </tr>
-        <tr>
-            <td>Email</td>
-            <td>${email}</td>
-        </tr>
-        <tr>
-            <td>Teléfono</td>
-            <td>${telefono}</td>
-        </tr>
-    </table>
-
-    <button onclick="location.reload()">Volver a llenar el formulario</button>
-    `
-})
-
+picker.addEventListener("input", function() {
+  document.documentElement.style.setProperty('--color-alterno', this.value);
+});
 </script>
 
 </body>
