@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -11,7 +12,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
         }
         .form-container {
@@ -49,7 +50,8 @@
         .btn-enviar { background-color: #28a745; color: white; grid-column: span 2; }
         .btn-salir { background-color: #dc3545; color: white; }
         .btn-limpiar { background-color: #6c757d; color: white; }
-        button:hover { opacity: 0.85; }
+        .btn-ver { background-color: #007bff; color: white; grid-column: span 2; text-decoration: none; text-align: center; padding: 10px; border-radius: 4px; display: block; }
+        button:hover, .btn-ver:hover { opacity: 0.85; }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
 
         #mensajeEstado {
@@ -66,8 +68,8 @@
 </head>
 <body>
 <div class="form-container">
-    <h2>Registro de 4to. Tecnico</h2>
-    <form id="miFormulario" action="https://formspree.io/f/xzdojzbk" method="POST">
+    <h2>Registro de 4to.</h2>
+    <form id="miFormulario">
         <div class="form-group">
             <label>Nombre</label>
             <input type="text" name="nombre" required>
@@ -92,42 +94,59 @@
             <button type="submit" class="btn-enviar">Enviar</button>
             <button type="button" class="btn-salir" onclick="window.close()">Salir</button>
             <button type="reset" class="btn-limpiar">Limpiar</button>
+            <a href="datos.html" class="btn-ver">Ver registros</a>
         </div>
         <div id="mensajeEstado"></div>
     </form>
 </div>
 
-<script>
+<script type="module">
+    // === IMPORTAR FIREBASE ===
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp }
+        from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // === TU CONFIGURACIÓN DE FIREBASE ===
+    const firebaseConfig = {
+        apiKey: "AIzaSyC7KCyzUCYtsE0S4exyDuhMnedRoqJVSyA",
+        authDomain: "my-web-11fc4.firebaseapp.com",
+        projectId: "my-web-11fc4",
+        storageBucket: "my-web-11fc4.firebasestorage.app",
+        messagingSenderId: "54023141783",
+        appId: "1:54023141783:web:e3c93ed9de1a8187c96cd2",
+        measurementId: "G-KV1QDZ7QQP"
+    };
+
+    // === INICIALIZAR ===
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // === MANEJO DEL FORMULARIO ===
     const formulario = document.getElementById('miFormulario');
     const mensajeEstado = document.getElementById('mensajeEstado');
 
     formulario.addEventListener('submit', async function(evento) {
-        evento.preventDefault(); // Evita que la página se recargue
+        evento.preventDefault();
 
-        const datos = new FormData(formulario);
         const botonEnviar = formulario.querySelector('.btn-enviar');
         botonEnviar.disabled = true;
         botonEnviar.textContent = 'Enviando...';
 
-        try {
-            const respuesta = await fetch(formulario.action, {
-                method: 'POST',
-                body: datos,
-                headers: { 'Accept': 'application/json' }
-            });
+        const datos = {
+            nombre: formulario.nombre.value.trim(),
+            apellido: formulario.apellido.value.trim(),
+            direccion: formulario.direccion.value.trim(),
+            cedula: formulario.cedula.value.trim(),
+            nacionalidad: formulario.nacionalidad.value.trim(),
+            fecha: serverTimestamp()
+        };
 
-            if (respuesta.ok) {
-                mensajeEstado.className = 'exito';
-                mensajeEstado.style.display = 'block';
-                mensajeEstado.textContent = '¡Datos enviados correctamente!';
-                formulario.reset();
-            } else {
-                const data = await respuesta.json();
-                const msg = data.errors
-                    ? data.errors.map(e => e.message).join(', ')
-                    : 'Hubo un problema al enviar el formulario.';
-                throw new Error(msg);
-            }
+        try {
+            await addDoc(collection(db, "registros"), datos);
+            mensajeEstado.className = 'exito';
+            mensajeEstado.style.display = 'block';
+            mensajeEstado.textContent = '¡Registro guardado correctamente!';
+            formulario.reset();
         } catch (error) {
             mensajeEstado.className = 'error';
             mensajeEstado.style.display = 'block';
@@ -138,7 +157,6 @@
         }
     });
 
-    // Ocultar el mensaje al limpiar el formulario
     formulario.addEventListener('reset', () => {
         mensajeEstado.style.display = 'none';
     });
