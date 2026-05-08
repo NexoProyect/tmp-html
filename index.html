@@ -1,76 +1,99 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<style>
-table {
-  font-family: arial, sans-serif;
-  border-collapse: collapse;
-  width: 100%;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Registro</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
 
-td, th {
-  border: 1px solid #dddddd;
-  text-align: left;
-  padding: 8px;
-}
+        .form-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
 
-tr:nth-child(even) {
-  background-color: var(--color-alterno, #dddddd);
-}
-</style>
+        h2 { text-align: center; color: #333; margin-bottom: 1.5rem; }
+
+        .form-group { margin-bottom: 1rem; }
+
+        label { display: block; margin-bottom: 5px; color: #666; font-size: 0.9rem; }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box; /* Importante para el padding */
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 1.5rem;
+        }
+
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.3s;
+        }
+
+        .btn-enviar { background-color: #28a745; color: white; grid-column: span 2; }
+        .btn-salir { background-color: #dc3545; color: white; }
+        .btn-limpiar { background-color: #6c757d; color: white; }
+
+        button:hover { opacity: 0.85; }
+    </style>
 </head>
 <body>
 
-<h2>HTML Table</h2>
+<div class="form-container">
+    <h2>Registro de Mia 4to.</h2>
+    <form id="miFormulario">
+        <div class="form-group">
+            <label>Nombre</label>
+            <input type="text" name="nombre" required>
+        </div>
+        <div class="form-group">
+            <label>Apellido</label>
+            <input type="text" name="apellido" required>
+        </div>
+        <div class="form-group">
+            <label>Dirección</label>
+            <input type="text" name="direccion">
+        </div>
+        <div class="form-group">
+            <label>Cédula</label>
+            <input type="text" name="cedula">
+        </div>
+        <div class="form-group">
+            <label>Nacionalidad</label>
+            <input type="text" name="nacionalidad">
+        </div>
 
-<label>Selecciona color para filas alternas: </label>
-<input type="color" id="colorPicker" value="#dddddd">
-
-<table>
-  <tr>
-    <th>Company</th>
-    <th>Contact</th>
-    <th>Country</th>
-  </tr>
-  <tr>
-    <td>Alfreds Futterkiste</td>
-    <td>Maria Anders</td>
-    <td>Germany</td>
-  </tr>
-  <tr>
-    <td>Centro comercial Moctezuma</td>
-    <td>Francisco Chang</td>
-    <td>Mexico</td>
-  </tr>
-  <tr>
-    <td>Ernst Handel</td>
-    <td>Roland Mendel</td>
-    <td>Austria</td>
-  </tr>
-  <tr>
-    <td>Island Trading</td>
-    <td>Helen Bennett</td>
-    <td>UK</td>
-  </tr>
-  <tr>
-    <td>Laughing Bacchus Winecellars</td>
-    <td>Yoshi Tannamuri</td>
-    <td>Canada</td>
-  </tr>
-  <tr>
-    <td>Magazzini Alimentari Riuniti</td>
-    <td>Giovanni Rovelli</td>
-    <td>Italy</td>
-  </tr>
-</table>
-
-<script>
-const picker = document.getElementById("colorPicker");
-
-picker.addEventListener("input", function() {
-  document.documentElement.style.setProperty('--color-alterno', this.value);
-});
-</script>
+        <div class="button-group">
+            <button type="submit" class="btn-enviar">Enviar</button>
+            <button type="button" class="btn-salir" onclick="window.close()">Salir</button>
+            <button type="reset" class="btn-limpiar">Limpiar</button>
+        </div>
+    </form>
+</div>
 
 </body>
 </html>
