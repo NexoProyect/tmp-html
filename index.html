@@ -14,7 +14,6 @@
             height: 100vh;
             margin: 0;
         }
-
         .form-container {
             background: white;
             padding: 2rem;
@@ -23,28 +22,22 @@
             width: 100%;
             max-width: 400px;
         }
-
         h2 { text-align: center; color: #333; margin-bottom: 1.5rem; }
-
         .form-group { margin-bottom: 1rem; }
-
         label { display: block; margin-bottom: 5px; color: #666; font-size: 0.9rem; }
-
         input {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            box-sizing: border-box; /* Importante para el padding */
+            box-sizing: border-box;
         }
-
         .button-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
             margin-top: 1.5rem;
         }
-
         button {
             padding: 10px;
             border: none;
@@ -53,19 +46,28 @@
             font-weight: bold;
             transition: opacity 0.3s;
         }
-
         .btn-enviar { background-color: #28a745; color: white; grid-column: span 2; }
         .btn-salir { background-color: #dc3545; color: white; }
         .btn-limpiar { background-color: #6c757d; color: white; }
-
         button:hover { opacity: 0.85; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        #mensajeEstado {
+            margin-top: 1rem;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .exito { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     </style>
 </head>
 <body>
-
 <div class="form-container">
-    <h2>Registro de Mia 4to.</h2>
-    <form id="miFormulario">
+    <h2>Registro de 4to. Tecnico</h2>
+    <form id="miFormulario" action="https://formspree.io/f/xzdojzbk" method="POST">
         <div class="form-group">
             <label>Nombre</label>
             <input type="text" name="nombre" required>
@@ -86,14 +88,60 @@
             <label>Nacionalidad</label>
             <input type="text" name="nacionalidad">
         </div>
-
         <div class="button-group">
             <button type="submit" class="btn-enviar">Enviar</button>
             <button type="button" class="btn-salir" onclick="window.close()">Salir</button>
             <button type="reset" class="btn-limpiar">Limpiar</button>
         </div>
+        <div id="mensajeEstado"></div>
     </form>
 </div>
 
+<script>
+    const formulario = document.getElementById('miFormulario');
+    const mensajeEstado = document.getElementById('mensajeEstado');
+
+    formulario.addEventListener('submit', async function(evento) {
+        evento.preventDefault(); // Evita que la página se recargue
+
+        const datos = new FormData(formulario);
+        const botonEnviar = formulario.querySelector('.btn-enviar');
+        botonEnviar.disabled = true;
+        botonEnviar.textContent = 'Enviando...';
+
+        try {
+            const respuesta = await fetch(formulario.action, {
+                method: 'POST',
+                body: datos,
+                headers: { 'Accept': 'application/json' }
+            });
+
+            if (respuesta.ok) {
+                mensajeEstado.className = 'exito';
+                mensajeEstado.style.display = 'block';
+                mensajeEstado.textContent = '¡Datos enviados correctamente!';
+                formulario.reset();
+            } else {
+                const data = await respuesta.json();
+                const msg = data.errors
+                    ? data.errors.map(e => e.message).join(', ')
+                    : 'Hubo un problema al enviar el formulario.';
+                throw new Error(msg);
+            }
+        } catch (error) {
+            mensajeEstado.className = 'error';
+            mensajeEstado.style.display = 'block';
+            mensajeEstado.textContent = 'Error: ' + error.message;
+        } finally {
+            botonEnviar.disabled = false;
+            botonEnviar.textContent = 'Enviar';
+        }
+    });
+
+    // Ocultar el mensaje al limpiar el formulario
+    formulario.addEventListener('reset', () => {
+        mensajeEstado.style.display = 'none';
+    });
+</script>
 </body>
 </html>
