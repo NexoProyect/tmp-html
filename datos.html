@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registros</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 2rem;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        h2 { color: #333; margin: 0; }
+        .btn-volver {
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .btn-volver:hover { opacity: 0.85; }
+
+        .buscador {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+        th {
+            background-color: #28a745;
+            color: white;
+            font-weight: bold;
+        }
+        tr:hover { background-color: #f9f9f9; }
+
+        .estado {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        .contador {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .tabla-wrapper { overflow-x: auto; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>Personas Registradas</h2>
+        <a href="index.html" class="btn-volver">← Volver al formulario</a>
+    </div>
+
+    <input type="text" id="buscador" class="buscador" placeholder="Buscar por nombre, apellido, cédula...">
+    <p class="contador" id="contador"></p>
+
+    <div class="tabla-wrapper">
+        <table id="tablaRegistros">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Dirección</th>
+                    <th>Cédula</th>
+                    <th>Nacionalidad</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody id="cuerpoTabla">
+                <tr><td colspan="7" class="estado">Cargando registros...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+    // === IMPORTAR FIREBASE ===
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy }
+        from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // === TU CONFIGURACIÓN DE FIREBASE ===
+    const firebaseConfig = {
+        apiKey: "AIzaSyC7KCyzUCYtsE0S4exyDuhMnedRoqJVSyA",
+        authDomain: "my-web-11fc4.firebaseapp.com",
+        projectId: "my-web-11fc4",
+        storageBucket: "my-web-11fc4.firebasestorage.app",
+        messagingSenderId: "54023141783",
+        appId: "1:54023141783:web:e3c93ed9de1a8187c96cd2",
+        measurementId: "G-KV1QDZ7QQP"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const cuerpoTabla = document.getElementById('cuerpoTabla');
+    const contador = document.getElementById('contador');
+    const buscador = document.getElementById('buscador');
+    let todosLosRegistros = [];
+
+    function formatearFecha(timestamp) {
+        if (!timestamp) return '-';
+        const fecha = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        return fecha.toLocaleString('es-DO', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit'
+        });
+    }
+
+    function pintarTabla(registros) {
+        if (registros.length === 0) {
+            cuerpoTabla.innerHTML = '<tr><td colspan="7" class="estado">No hay registros para mostrar.</td></tr>';
+            contador.textContent = '';
+            return;
+        }
+        cuerpoTabla.innerHTML = registros.map((reg, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${reg.nombre || '-'}</td>
+                <td>${reg.apellido || '-'}</td>
+                <td>${reg.direccion || '-'}</td>
+                <td>${reg.cedula || '-'}</td>
+                <td>${reg.nacionalidad || '-'}</td>
+                <td>${formatearFecha(reg.fecha)}</td>
+            </tr>
+        `).join('');
+        contador.textContent = `Mostrando ${registros.length} registro(s)`;
+    }
+
+    async function cargarRegistros() {
+        try {
+            const q = query(collection(db, "registros"), orderBy("fecha", "desc"));
+            const snapshot = await getDocs(q);
+            todosLosRegistros = snapshot.docs.map(doc => doc.data());
+            pintarTabla(todosLosRegistros);
+        } catch (error) {
+            cuerpoTabla.innerHTML = `<tr><td colspan="7" class="estado">Error al cargar: ${error.message}</td></tr>`;
+        }
+    }
+
+    buscador.addEventListener('input', (e) => {
+        const texto = e.target.value.toLowerCase();
+        const filtrados = todosLosRegistros.filter(reg =>
+            Object.values(reg).some(valor =>
+                String(valor).toLowerCase().includes(texto)
+            )
+        );
+        pintarTabla(filtrados);
+    });
+
+    cargarRegistros();
+</script>
+</body>
+</html>
