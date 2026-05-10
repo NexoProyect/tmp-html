@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Dados 3D Interactivos</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #fff;
+    overflow: hidden;
+    padding: 20px;
+  }
+
+  h1 {
+    margin-bottom: 10px;
+    font-size: 2rem;
+    background: linear-gradient(90deg, #f7d794, #f5cd79, #ffeaa7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-align: center;
+  }
+
+  .instructions {
+    margin-bottom: 30px;
+    opacity: 0.7;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
+  .scene-container {
+    display: flex;
+    gap: 80px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 30px;
+  }
+
+  .scene {
+    width: 200px;
+    height: 200px;
+    perspective: 800px;
+    cursor: grab;
+  }
+
+  .scene:active { cursor: grabbing; }
+
+  .dice {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 1.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+
+  .dice.dragging { transition: none; }
+
+  .face {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(135deg, #ffffff 0%, #e8e8e8 100%);
+    border: 2px solid #333;
+    border-radius: 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    padding: 25px;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.1);
+  }
+
+  .pip {
+    width: 28px;
+    height: 28px;
+    background: radial-gradient(circle at 30% 30%, #555, #000);
+    border-radius: 50%;
+    align-self: center;
+    justify-self: center;
+    box-shadow: inset 2px 2px 4px rgba(255,255,255,0.2),
+                inset -2px -2px 4px rgba(0,0,0,0.5);
+  }
+
+  /* Posiciones de los pips por cara */
+  .face-1 .pip:nth-child(1) { grid-area: 2 / 2; }
+
+  .face-2 .pip:nth-child(1) { grid-area: 1 / 1; }
+  .face-2 .pip:nth-child(2) { grid-area: 3 / 3; }
+
+  .face-3 .pip:nth-child(1) { grid-area: 1 / 1; }
+  .face-3 .pip:nth-child(2) { grid-area: 2 / 2; }
+  .face-3 .pip:nth-child(3) { grid-area: 3 / 3; }
+
+  .face-4 .pip:nth-child(1) { grid-area: 1 / 1; }
+  .face-4 .pip:nth-child(2) { grid-area: 1 / 3; }
+  .face-4 .pip:nth-child(3) { grid-area: 3 / 1; }
+  .face-4 .pip:nth-child(4) { grid-area: 3 / 3; }
+
+  .face-5 .pip:nth-child(1) { grid-area: 1 / 1; }
+  .face-5 .pip:nth-child(2) { grid-area: 1 / 3; }
+  .face-5 .pip:nth-child(3) { grid-area: 2 / 2; }
+  .face-5 .pip:nth-child(4) { grid-area: 3 / 1; }
+  .face-5 .pip:nth-child(5) { grid-area: 3 / 3; }
+
+  .face-6 .pip:nth-child(1) { grid-area: 1 / 1; }
+  .face-6 .pip:nth-child(2) { grid-area: 1 / 3; }
+  .face-6 .pip:nth-child(3) { grid-area: 2 / 1; }
+  .face-6 .pip:nth-child(4) { grid-area: 2 / 3; }
+  .face-6 .pip:nth-child(5) { grid-area: 3 / 1; }
+  .face-6 .pip:nth-child(6) { grid-area: 3 / 3; }
+
+  /* Posicionamiento 3D de las caras */
+  .face-1 { transform: translateZ(100px); }
+  .face-6 { transform: rotateY(180deg) translateZ(100px); }
+  .face-3 { transform: rotateY(90deg) translateZ(100px); }
+  .face-4 { transform: rotateY(-90deg) translateZ(100px); }
+  .face-2 { transform: rotateX(90deg) translateZ(100px); }
+  .face-5 { transform: rotateX(-90deg) translateZ(100px); }
+
+  .controls {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  button {
+    padding: 12px 28px;
+    font-size: 1rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #f7d794, #f5cd79);
+    color: #1a1a2e;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(247, 215, 148, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(247, 215, 148, 0.5);
+  }
+
+  button:active { transform: translateY(0); }
+
+  .result {
+    margin-top: 20px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    min-height: 2rem;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <h1>🎲 El Dado Multiplicador 🎲</h1>
+  <p class="instructions">Arrastra con el mouse para girar · Doble clic para tirar</p>
+
+  <div class="scene-container">
+    <div class="scene" id="scene1">
+      <div class="dice" id="dice1">
+        <div class="face face-1"><div class="pip"></div></div>
+        <div class="face face-2"><div class="pip"></div><div class="pip"></div></div>
+        <div class="face face-3"><div class="pip"></div><div class="pip"></div><div class="pip"></div></div>
+        <div class="face face-4"><div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div></div>
+        <div class="face face-5"><div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div></div>
+        <div class="face face-6"><div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div></div>
+      </div>
+    </div>
+
+    <div class="scene" id="scene2">
+      <div class="dice" id="dice2">
+        <div class="face face-1"><div class="pip"></div></div>
+        <div class="face face-2"><div class="pip"></div><div class="pip"></div></div>
+        <div class="face face-3"><div class="pip"></div><div class="pip"></div><div class="pip"></div></div>
+        <div class="face face-4"><div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div></div>
+        <div class="face face-5"><div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div></div>
+        <div class="face face-6"><div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="rollBtn">🎲 Tirar Dados</button>
+    <button id="resetBtn">↺ Reiniciar</button>
+  </div>
+
+  <div class="result" id="result"></div>
+
+<script>
+  function setupDice(sceneId, diceId) {
+    const scene = document.getElementById(sceneId);
+    const dice = document.getElementById(diceId);
+
+    let rotX = -20, rotY = 25;
+    let isDragging = false;
+    let lastX = 0, lastY = 0;
+
+    function updateRotation() {
+      dice.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+    }
+
+    updateRotation();
+
+    scene.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      dice.classList.add('dragging');
+      lastX = e.clientX;
+      lastY = e.clientY;
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      rotY += dx * 0.5;
+      rotX -= dy * 0.5;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      updateRotation();
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+      dice.classList.remove('dragging');
+    });
+
+    // Touch support
+    scene.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      dice.classList.add('dragging');
+      lastX = e.touches[0].clientX;
+      lastY = e.touches[0].clientY;
+    });
+
+    window.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      const dx = e.touches[0].clientX - lastX;
+      const dy = e.touches[0].clientY - lastY;
+      rotY += dx * 0.5;
+      rotX -= dy * 0.5;
+      lastX = e.touches[0].clientX;
+      lastY = e.touches[0].clientY;
+      updateRotation();
+    });
+
+    window.addEventListener('touchend', () => {
+      isDragging = false;
+      dice.classList.remove('dragging');
+    });
+
+    // Doble clic para tirar este dado
+    scene.addEventListener('dblclick', () => {
+      rollSingle();
+    });
+
+    function rollSingle() {
+      const value = Math.floor(Math.random() * 6) + 1;
+      const rotations = getRotationForFace(value);
+      rotX = rotations.x + 360 * (Math.floor(Math.random() * 2) + 2);
+      rotY = rotations.y + 360 * (Math.floor(Math.random() * 2) + 2);
+      updateRotation();
+      return value;
+    }
+
+    return { rollSingle, getRot: () => ({ rotX, rotY }) };
+  }
+
+  // Rotaciones para que cada cara quede mirando al usuario
+  function getRotationForFace(face) {
+    const map = {
+      1: { x: 0,    y: 0    },
+      2: { x: -90,  y: 0    },
+      3: { x: 0,    y: -90  },
+      4: { x: 0,    y: 90   },
+      5: { x: 90,   y: 0    },
+      6: { x: 0,    y: 180  }
+    };
+    return map[face];
+  }
+
+  const d1 = setupDice('scene1', 'dice1');
+  const d2 = setupDice('scene2', 'dice2');
+
+  const result = document.getElementById('result');
+
+  document.getElementById('rollBtn').addEventListener('click', () => {
+    const v1 = d1.rollSingle();
+    const v2 = d2.rollSingle();
+    setTimeout(() => {
+      result.textContent = `Multiplica ${v1} x ${v2}`;
+    }, 1500);
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    location.reload();
+  });
+</script>
+</body>
+</html>
