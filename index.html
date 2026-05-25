@@ -1,165 +1,415 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario de Registro</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .form-container {
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 400px;
-        }
-        h2 { text-align: center; color: #333; margin-bottom: 1.5rem; }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 5px; color: #666; font-size: 0.9rem; }
-        input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .button-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 1.5rem;
-        }
-        button {
-            padding: 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: opacity 0.3s;
-        }
-        .btn-enviar { background-color: #28a745; color: white; grid-column: span 2; }
-        .btn-salir { background-color: #dc3545; color: white; }
-        .btn-limpiar { background-color: #6c757d; color: white; }
-        .btn-ver { background-color: #007bff; color: white; grid-column: span 2; text-decoration: none; text-align: center; padding: 10px; border-radius: 4px; display: block; }
-        button:hover, .btn-ver:hover { opacity: 0.85; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        #mensajeEstado {
-            margin-top: 1rem;
-            padding: 10px;
-            border-radius: 4px;
-            text-align: center;
-            font-size: 0.9rem;
-            display: none;
-        }
-        .exito { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gestor de Tareas del Curso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=JetBrains+Mono:wght@400;500;700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-<div class="form-container">
-    <h2>Registro de 4to.</h2>
-    <form id="miFormulario">
-        <div class="form-group">
-            <label>Nombre</label>
-            <input type="text" name="nombre" required>
-        </div>
-        <div class="form-group">
-            <label>Apellido</label>
-            <input type="text" name="apellido" required>
-        </div>
-        <div class="form-group">
-            <label>Dirección</label>
-            <input type="text" name="direccion">
-        </div>
-        <div class="form-group">
-            <label>Cédula</label>
-            <input type="text" name="cedula">
-        </div>
-        <div class="form-group">
-            <label>Nacionalidad</label>
-            <input type="text" name="nacionalidad">
-        </div>
-        <div class="button-group">
-            <button type="submit" class="btn-enviar">Enviar</button>
-            <button type="button" class="btn-salir" onclick="window.close()">Salir</button>
-            <button type="reset" class="btn-limpiar">Limpiar</button>
-            <a href="datos.html" class="btn-ver">Ver registros</a>
-        </div>
-        <div id="mensajeEstado"></div>
-    </form>
+
+<!-- ============ LOADING SPLASH ============ -->
+<div id="splash" class="splash">
+  <div class="splash-inner">
+    <div class="splash-mark">A</div>
+    <div class="splash-text">cargando aula…</div>
+  </div>
 </div>
 
-<script type="module">
-    // === IMPORTAR FIREBASE ===
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp }
-        from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+<!-- ============ AUTH SCREEN ============ -->
+<section id="auth-screen" class="auth-screen hidden">
+  <div class="auth-grid">
+    <aside class="auth-side">
+      <div class="auth-brand">
+        <span class="brand-mark">A</span>
+        <span class="brand-name">Aula</span>
+      </div>
+      <div class="auth-headline">
+        <h1>Las tareas <em>del curso</em>,<br/>en un solo lugar.</h1>
+        <p>Una espacio compartido para que todos remonten la P4 al estilo Geancarlos. Sube la foto, marca la fecha, y listo.</p>
+      </div>
+      <div class="auth-meta">
+        <div class="meta-row"><span class="dot"></span> Construido por estudiantes, para estudiantes</div>
+        <div class="meta-row"><span class="dot dot2"></span> Las tareas vencidas se borran solas</div>
+        <div class="meta-row"><span class="dot dot3"></span> Edición revisada por Julianna Jimenez y Johangel Vasquez</div>
+      </div>
+    </aside>
 
-    // === TU CONFIGURACIÓN DE FIREBASE ===
-    const firebaseConfig = {
-        apiKey: "AIzaSyC7KCyzUCYtsE0S4exyDuhMnedRoqJVSyA",
-        authDomain: "my-web-11fc4.firebaseapp.com",
-        projectId: "my-web-11fc4",
-        storageBucket: "my-web-11fc4.firebasestorage.app",
-        messagingSenderId: "54023141783",
-        appId: "1:54023141783:web:e3c93ed9de1a8187c96cd2",
-        measurementId: "G-KV1QDZ7QQP"
-    };
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="tab active" data-tab="login">Iniciar sesión</button>
+        <button class="tab" data-tab="register">Crear cuenta</button>
+      </div>
 
-    // === INICIALIZAR ===
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+      <!-- LOGIN -->
+      <form id="login-form" class="auth-form">
+        <label>
+          <span>Correo</span>
+          <input type="email" name="email" required placeholder="tu@correo.com" autocomplete="email"/>
+        </label>
+        <label>
+          <span>Contraseña</span>
+          <input type="password" name="password" required placeholder="••••••••" autocomplete="current-password"/>
+        </label>
+        <div class="form-error" id="login-error"></div>
+        <button type="submit" class="btn-primary">
+          <span>Entrar</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </button>
+      </form>
 
-    // === MANEJO DEL FORMULARIO ===
-    const formulario = document.getElementById('miFormulario');
-    const mensajeEstado = document.getElementById('mensajeEstado');
+      <!-- REGISTER -->
+      <form id="register-form" class="auth-form hidden">
+        <label>
+          <span>Nombre completo</span>
+          <input type="text" name="name" required placeholder="Tu nombre" autocomplete="name"/>
+        </label>
+        <label>
+          <span>Correo</span>
+          <input type="email" name="email" required placeholder="tu@correo.com" autocomplete="email"/>
+        </label>
+        <label>
+          <span>Contraseña</span>
+          <input type="password" name="password" required minlength="6" placeholder="Mínimo 6 caracteres" autocomplete="new-password"/>
+        </label>
+        <div class="form-error" id="register-error"></div>
+        <button type="submit" class="btn-primary">
+          <span>Crear cuenta</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </button>
+      </form>
 
-    formulario.addEventListener('submit', async function(evento) {
-        evento.preventDefault();
+      <div class="auth-foot">
+        <span class="kbd">Tip</span> El primer usuario en registrarse será el administrador del curso.
+      </div>
+    </div>
+  </div>
+</section>
 
-        const botonEnviar = formulario.querySelector('.btn-enviar');
-        botonEnviar.disabled = true;
-        botonEnviar.textContent = 'Enviando...';
+<!-- ============ APP SHELL ============ -->
+<section id="app" class="app hidden">
 
-        const datos = {
-            nombre: formulario.nombre.value.trim(),
-            apellido: formulario.apellido.value.trim(),
-            direccion: formulario.direccion.value.trim(),
-            cedula: formulario.cedula.value.trim(),
-            nacionalidad: formulario.nacionalidad.value.trim(),
-            fecha: serverTimestamp()
-        };
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand-mini"><span class="brand-mark sm">A</span><span class="brand-name sm">Aula</span></div>
+      <nav class="nav">
+        <button class="nav-btn active" data-view="tareas">Tareas</button>
+        <button class="nav-btn" data-view="materias">Materias</button>
+        <button class="nav-btn" data-view="solicitudes">
+          Solicitudes
+          <span class="badge" id="req-badge" hidden>0</span>
+        </button>
+        <button class="nav-btn admin-only" data-view="usuarios" hidden>Usuarios</button>
+      </nav>
+    </div>
+    <div class="topbar-right">
+      <div class="role-chip" id="role-chip">—</div>
+      <div class="user-chip">
+        <div class="avatar" id="user-avatar">U</div>
+        <div class="user-meta">
+          <div class="user-name" id="user-name">—</div>
+          <div class="user-mail" id="user-mail">—</div>
+        </div>
+        <button class="icon-btn" id="logout-btn" title="Cerrar sesión">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
 
-        try {
-            await addDoc(collection(db, "registros"), datos);
-            mensajeEstado.className = 'exito';
-            mensajeEstado.style.display = 'block';
-            mensajeEstado.textContent = '¡Registro guardado correctamente!';
-            formulario.reset();
-        } catch (error) {
-            mensajeEstado.className = 'error';
-            mensajeEstado.style.display = 'block';
-            mensajeEstado.textContent = 'Error: ' + error.message;
-        } finally {
-            botonEnviar.disabled = false;
-            botonEnviar.textContent = 'Enviar';
-        }
-    });
+  <!-- ============ VIEW: TAREAS ============ -->
+  <main class="view view-tareas" data-view="tareas">
+    <div class="page-head">
+      <div>
+        <p class="eyebrow">Panel del curso</p>
+        <h1 class="page-title">Tareas <em>pendientes</em></h1>
+      </div>
+      <div class="head-actions">
+        <div class="search-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" id="search-input" placeholder="Buscar tarea…"/>
+        </div>
+        <button class="btn-primary" id="new-task-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Nueva tarea</span>
+        </button>
+      </div>
+    </div>
 
-    formulario.addEventListener('reset', () => {
-        mensajeEstado.style.display = 'none';
-    });
-</script>
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-num" id="stat-total">0</div>
+        <div class="stat-label">Tareas activas</div>
+      </div>
+      <div class="stat stat-warn">
+        <div class="stat-num" id="stat-soon">0</div>
+        <div class="stat-label">Vencen en ≤2 días</div>
+      </div>
+      <div class="stat stat-ok">
+        <div class="stat-num" id="stat-done">0</div>
+        <div class="stat-label">Marcadas por ti</div>
+      </div>
+      <div class="stat stat-alt">
+        <div class="stat-num" id="stat-mats">0</div>
+        <div class="stat-label">Materias</div>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <button class="chip chip-active" data-filter="all">Todas</button>
+      <div class="chip-divider"></div>
+      <div id="material-chips" class="chip-scroll"></div>
+    </div>
+
+    <div id="tasks-list" class="tasks-list"></div>
+    <div id="tasks-empty" class="empty-state hidden">
+      <div class="empty-mark">∅</div>
+      <h3>Sin tareas por aquí</h3>
+      <p>Cuando alguien suba una tarea, aparecerá en este tablero.</p>
+    </div>
+  </main>
+
+  <!-- ============ VIEW: MATERIAS ============ -->
+  <main class="view view-materias hidden" data-view="materias">
+    <div class="page-head">
+      <div>
+        <p class="eyebrow">Catálogo</p>
+        <h1 class="page-title">Materias <em>del curso</em></h1>
+      </div>
+      <button class="btn-primary admin-only" id="new-material-btn" hidden>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        <span>Nueva materia</span>
+      </button>
+    </div>
+    <div id="materials-grid" class="materials-grid"></div>
+    <div id="materials-empty" class="empty-state hidden">
+      <div class="empty-mark">∅</div>
+      <h3>Aún no hay materias</h3>
+      <p class="admin-only" hidden>Crea la primera materia para que todos puedan subir tareas.</p>
+      <p class="non-admin-only">Pídele al admin que agregue las materias del curso.</p>
+    </div>
+  </main>
+
+  <!-- ============ VIEW: SOLICITUDES ============ -->
+  <main class="view view-solicitudes hidden" data-view="solicitudes">
+    <div class="page-head">
+      <div>
+        <p class="eyebrow">Revisión</p>
+        <h1 class="page-title">Solicitudes <em>de edición</em></h1>
+      </div>
+    </div>
+    <div id="requests-list" class="requests-list"></div>
+    <div id="requests-empty" class="empty-state hidden">
+      <div class="empty-mark">∅</div>
+      <h3>Nada que revisar</h3>
+      <p>Cuando alguien proponga cambios a una tarea, aparecerán aquí.</p>
+    </div>
+  </main>
+
+  <!-- ============ VIEW: USUARIOS (admin) ============ -->
+  <main class="view view-usuarios hidden" data-view="usuarios">
+    <div class="page-head">
+      <div>
+        <p class="eyebrow">Administración</p>
+        <h1 class="page-title">Usuarios <em>del curso</em></h1>
+      </div>
+    </div>
+    <div id="users-list" class="users-list"></div>
+  </main>
+</section>
+
+<!-- ============ MODAL: NEW/EDIT TASK ============ -->
+<div id="task-modal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="modal-card task-modal-card">
+    <div class="modal-head">
+      <h2 id="task-modal-title">Nueva tarea</h2>
+      <button class="icon-btn" data-close-modal="task-modal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="task-form" class="modal-form">
+      <div class="form-grid">
+        <label class="col-2">
+          <span>Título</span>
+          <input type="text" name="title" required placeholder="Ej: Ensayo sobre la Revolución Industrial"/>
+        </label>
+
+        <label>
+          <span>Materia</span>
+          <select name="materialId" id="task-material" required></select>
+        </label>
+
+        <label>
+          <span>Fecha de entrega</span>
+          <input type="date" name="dueDate" id="task-due" required/>
+        </label>
+
+        <label class="col-2">
+          <span>Descripción <em>(opcional)</em></span>
+          <textarea name="description" rows="3" placeholder="Detalles, indicaciones, páginas…"></textarea>
+        </label>
+
+        <div class="col-2 form-segment">
+          <span class="seg-label">Formato</span>
+          <div class="seg">
+            <label class="seg-opt">
+              <input type="radio" name="format" value="digital" checked/>
+              <div class="seg-bg"></div>
+              <span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                Digital
+              </span>
+            </label>
+            <label class="seg-opt">
+              <input type="radio" name="format" value="fisica"/>
+              <div class="seg-bg"></div>
+              <span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                Física
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <label class="col-2">
+          <span>Dónde entregar</span>
+          <input type="text" name="deliverTo" required placeholder="Ej: Google Classroom · email del profesor · entregar en mano"/>
+        </label>
+
+        <label class="col-2 file-label">
+          <span>Foto de la tarea <em>(opcional, máx ~700KB)</em></span>
+          <input type="file" name="photo" id="task-photo" accept="image/*"/>
+          <div class="file-preview" id="task-photo-preview"></div>
+        </label>
+      </div>
+      <div class="form-error" id="task-error"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" data-close-modal="task-modal">Cancelar</button>
+        <button type="submit" class="btn-primary" id="task-submit">
+          <span>Guardar</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL: TASK DETAIL ============ -->
+<div id="detail-modal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="modal-card detail-card">
+    <div class="modal-head">
+      <h2 id="detail-title">Detalle de tarea</h2>
+      <button class="icon-btn" data-close-modal="detail-modal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="detail-body" class="detail-body"></div>
+  </div>
+</div>
+
+<!-- ============ MODAL: NEW MATERIAL ============ -->
+<div id="material-modal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2>Nueva materia</h2>
+      <button class="icon-btn" data-close-modal="material-modal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="material-form" class="modal-form">
+      <div class="form-grid">
+        <label class="col-2">
+          <span>Nombre</span>
+          <input type="text" name="name" required placeholder="Ej: Matemáticas, Historia, Biología…"/>
+        </label>
+        <label class="col-2">
+          <span>Profesor <em>(opcional)</em></span>
+          <input type="text" name="teacher" placeholder="Nombre del profesor"/>
+        </label>
+        <label class="col-2">
+          <span>Color</span>
+          <div class="color-picker" id="color-picker"></div>
+          <input type="hidden" name="color" id="material-color" value="#ff5e3a"/>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" data-close-modal="material-modal">Cancelar</button>
+        <button type="submit" class="btn-primary">Crear materia</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL: EDIT REQUEST ============ -->
+<div id="edit-request-modal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="modal-card task-modal-card">
+    <div class="modal-head">
+      <h2>Solicitar edición</h2>
+      <button class="icon-btn" data-close-modal="edit-request-modal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <p class="modal-sub">Propón los cambios. El administrador los revisará antes de aplicarlos.</p>
+    <form id="edit-request-form" class="modal-form">
+      <div class="form-grid">
+        <label class="col-2">
+          <span>Título</span>
+          <input type="text" name="title" required/>
+        </label>
+        <label>
+          <span>Materia</span>
+          <select name="materialId" id="req-material" required></select>
+        </label>
+        <label>
+          <span>Fecha de entrega</span>
+          <input type="date" name="dueDate" required/>
+        </label>
+        <label class="col-2">
+          <span>Descripción</span>
+          <textarea name="description" rows="3"></textarea>
+        </label>
+        <div class="col-2 form-segment">
+          <span class="seg-label">Formato</span>
+          <div class="seg">
+            <label class="seg-opt">
+              <input type="radio" name="format" value="digital"/>
+              <div class="seg-bg"></div>
+              <span>Digital</span>
+            </label>
+            <label class="seg-opt">
+              <input type="radio" name="format" value="fisica"/>
+              <div class="seg-bg"></div>
+              <span>Física</span>
+            </label>
+          </div>
+        </div>
+        <label class="col-2">
+          <span>Dónde entregar</span>
+          <input type="text" name="deliverTo" required/>
+        </label>
+        <label class="col-2">
+          <span>Motivo del cambio</span>
+          <textarea name="reason" rows="2" required placeholder="¿Por qué propones este cambio?"></textarea>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" data-close-modal="edit-request-modal">Cancelar</button>
+        <button type="submit" class="btn-primary">Enviar solicitud</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ TOAST ============ -->
+<div id="toast" class="toast"></div>
+
+<script type="module" src="./app.js"></script>
 </body>
 </html>
